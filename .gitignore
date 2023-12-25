@@ -8,3 +8,4 @@ sqlite.db
 sqlite.db*
 .tmp
 .DS_Store
+test.txt

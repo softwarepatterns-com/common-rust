@@ -116,11 +116,9 @@ fn test_2() {
 
 ### Strict Equality Assertions
 
-This library provides strict equality assertions that will fail if the types are not the same.
+This library provides strict equality assertions that will fail at compile time if the types are not comparable with PartialEq.
 
-The marcos for testing equality (assert!, assert_eq!, assert_ne!) are not strict enough regarding types. For example, `assert_eq!(1, 1.0)` will pass. Also, the marcos will sometimes not detect issues until runtime. By providing non-macro functions that require PartialEq, the compiler catches more issues at compile time.
-
-We also standardize the equality assertions to always print comparisons of the values in the error message, and require the values to be references to prevent assertions from taking accidental ownership.
+Stardardizes the error message to always print comparisons of the values, and require the values to be references to prevent assertions from taking accidental ownership.
 
 - assert::equal
 - assert::not_equal

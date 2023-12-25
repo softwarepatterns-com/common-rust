@@ -35,7 +35,8 @@ where
 /// Asserts two values are equal using PartialEq, allowing for different
 /// types to be compared.
 ///
-/// Error message will show the values that were compared.
+/// Error message will show the values that were compared using
+/// `pretty_assertions` crate.
 ///
 /// # Example
 ///
@@ -63,7 +64,8 @@ where
 /// Asserts two values are not equal using PartialEq, allowing for
 /// different types to be compared.
 ///
-/// Error message will show the values that were compared.
+/// Error message will show the values that were compared using
+/// `pretty_assertions` crate.
 ///
 /// # Example
 ///

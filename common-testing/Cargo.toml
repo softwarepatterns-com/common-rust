@@ -2,7 +2,7 @@
 name = "common-testing"
 authors = ["Dane Stuckel <dane@softwarepatterns.com>"]
 description = "Common testing shortcuts and utilities reused across projects."
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 readme = "README.md"
 repository = "https://github.com/softwarepatterns-com/common-rust/tree/main/common-testing"

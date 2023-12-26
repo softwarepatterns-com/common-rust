@@ -189,3 +189,15 @@ fn test_1() {
   assert::equal_hex_bytes(&result1, &result2);
 }
 ```
+
+## Contributing and Architectural Decisions
+
+This library is intended to be a collection of useful testing utilities. If you have a function that you've found useful in more than one project, consider adding it to this repo.
+
+- Note that this library is intended to be a collection of utilities, not a framework. Specifically, if you're adding new concepts or ideas, consider creating a new repo for it.
+
+- If you have a utility that is not useful in more than one project, consider keeping it in the project that uses it.
+
+- If you're using macros, considering isolating them in a dedicated crate instead of adding them to this repo. Macros are more difficult to maintain and test, can be a barrier to entry for new contributors, and tend to spread through a project in a way that makes it difficult to remove or upgrade.
+
+See [CHANGELOG](./CHANGELOG.md).

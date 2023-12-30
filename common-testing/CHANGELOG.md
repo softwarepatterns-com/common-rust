@@ -1,5 +1,9 @@
 # Common Testing Changelog
 
+## v1.1.0
+
+- Assume destination type for assert:equal and assert:not_equal are the second parameter.
+
 ## v1.0.0
 
 - Add automatic unwrap functionality to assert::equal and assert::not_equal.

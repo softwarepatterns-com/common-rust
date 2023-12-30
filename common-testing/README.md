@@ -118,6 +118,8 @@ fn test_2() {
 
 This library provides strict equality assertions that will fail at compile time if the types are not comparable with PartialEq.
 
+Automatically unwraps Result and Option, failing the test if the value is Err or None. This is useful for removing boilerplate `.unwrap().unwrap()` calls in tests.
+
 Stardardizes the error message to always print comparisons of the values, and require the values to be references to prevent assertions from taking accidental ownership.
 
 - assert::equal
@@ -129,10 +131,20 @@ use common_testing::assert;
 
 #[test]
 fn test_1() {
+  // Has a useful comparison message, uses pretty_assertions to display
+  // diffs when the test fails.
   assert::equal(&1, &1);
   assert::not_equal(&1, &2);
 
-   // assert i is the default value for i's type.
+  // Automatically unwraps Result and Option, failing
+  // the test if the value is Err or None.
+  assert::equal(Result::Ok(1), 1);
+  assert::equal(Option::Some(1), 1);
+  assert::equal(Option::Some(Result::Ok(1)), 1);
+  assert::equal(Result::Ok(Option::Some(1)), 1);
+
+  // Assert a value is equal to the default value for i's type,
+  // useful for testing implementations that use `::default()`.
   let i = 0;
   assert::default(i);
 }

@@ -1,5 +1,5 @@
 use crate::setup;
-use pretty_assertions::assert_eq;
+use pretty_assertions::{assert_eq, assert_ne};
 use std::borrow::Cow;
 use std::fmt::Debug;
 use std::io::Cursor;
@@ -32,8 +32,46 @@ where
   assert_eq!(a.as_ref(), b.as_ref());
 }
 
+/// A trait that can be `R`, `Result<R>`, `Option<R>`, `Result<Option<R>>`, or
+/// `Option<Result<R>>` and can unwrap to return R.
+pub trait Unwrappable<R> {
+  fn unwrap_into(self) -> R;
+}
+
+impl<R> Unwrappable<R> for R {
+  fn unwrap_into(self) -> R {
+    self
+  }
+}
+
+impl<R> Unwrappable<R> for Option<R> {
+  fn unwrap_into(self) -> R {
+    self.unwrap() // Panics if None, which is suitable for a test failure
+  }
+}
+
+impl<R, E: std::fmt::Debug> Unwrappable<R> for std::result::Result<R, E> {
+  fn unwrap_into(self) -> R {
+    self.unwrap() // Panics if Err, suitable for indicating a test failure
+  }
+}
+
+impl<R, E: std::fmt::Debug> Unwrappable<R> for std::result::Result<Option<R>, E> {
+  fn unwrap_into(self) -> R {
+    self.unwrap().unwrap() // Double unwrap, panics on Err or None
+  }
+}
+
+impl<R, E: std::fmt::Debug> Unwrappable<R> for Option<std::result::Result<R, E>> {
+  fn unwrap_into(self) -> R {
+    self.unwrap().unwrap() // Double unwrap, panics on None or Err
+  }
+}
+
 /// Asserts two values are equal using PartialEq, allowing for different
-/// types to be compared.
+/// types to be compared. Automatically unwraps Result and Option, failing
+/// the test if the value is Err or None.  This is useful for removing
+/// boilerplate `.unwrap().unwrap()` calls in tests.
 ///
 /// Error message will show the values that were compared using
 /// `pretty_assertions` crate.
@@ -50,19 +88,26 @@ where
 ///   equal(&result, &"abc");
 ///   equal(5, 5);
 ///   equal(&5, &5);
+///   equal(Result::Ok(5), 5);
+///   equal(Option::Some(5), 5);
+///   equal(Result::Ok(Option::Some(5)), 5);
+///   equal(Option::Some(Result::Ok(5)), 5);
 /// }
 /// ```
 #[track_caller]
 pub fn equal<E, R>(a: E, b: R)
 where
-  E: Debug + PartialEq + PartialEq<R>,
+  E: Debug + Unwrappable<R>,
   R: Debug + PartialEq,
 {
-  assert_eq!(a, b, "Expected {:?} to equal {:?}.", a, b);
+  let c = a.unwrap_into();
+  assert_eq!(c, b, "Expected {:?} to equal {:?}.", c, b);
 }
 
 /// Asserts two values are not equal using PartialEq, allowing for
-/// different types to be compared.
+/// different types to be compared. Automatically unwraps Result and Option,
+/// failing the test if the value is Err or None.  This is useful for removing
+/// boilerplate `.unwrap().unwrap()` calls in tests.
 ///
 /// Error message will show the values that were compared using
 /// `pretty_assertions` crate.
@@ -81,10 +126,11 @@ where
 #[track_caller]
 pub fn not_equal<E, R>(a: E, b: R)
 where
-  E: Debug + PartialEq + PartialEq<R>,
+  E: Debug + Unwrappable<R>,
   R: Debug + PartialEq,
 {
-  assert_ne!(a, b, "Expected {:?} to not equal {:?}.", a, b);
+  let c = a.unwrap_into();
+  assert_ne!(c, b, "Expected {:?} to not equal {:?}.", c, b);
 }
 
 /// More specific than assert::equal, must be for AsRef<[u8]>. On failure,
@@ -464,6 +510,10 @@ mod tests {
     equal(&result, &"abc");
     equal(5, 5);
     equal(&5, &5);
+    equal(Result::Ok(5), 5);
+    equal(Option::Some(5), 5);
+    equal(Result::Ok(Option::Some(5)), 5);
+    equal(Option::Some(Result::Ok(5)), 5);
   }
 
   #[test]
@@ -471,6 +521,12 @@ mod tests {
     let result = "abc";
     not_equal(result, "def");
     not_equal(result.as_bytes(), b"bcd");
+    not_equal(5, 4);
+    not_equal(&5, &4);
+    not_equal(Result::Ok(5), 4);
+    not_equal(Option::Some(5), 4);
+    not_equal(Result::Ok(Option::Some(5)), 4);
+    not_equal(Option::Some(Result::Ok(5)), 4);
   }
 
   #[test]

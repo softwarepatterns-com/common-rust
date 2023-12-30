@@ -34,37 +34,49 @@ where
 
 /// A trait that can be `R`, `Result<R>`, `Option<R>`, `Result<Option<R>>`, or
 /// `Option<Result<R>>` and can unwrap to return R.
-pub trait Unwrappable<R> {
-  fn unwrap_into(self) -> R;
+pub trait Unwrappable<T, R> {
+  type Output: Debug + PartialEq<R>;
+  fn unwrap_into(self) -> Self::Output;
 }
 
-impl<R> Unwrappable<R> for Option<R> {
-  fn unwrap_into(self) -> R {
+impl<T: Debug + PartialEq + PartialEq<R>, R: Debug + PartialEq<T>> Unwrappable<T, R> for T {
+  type Output = T;
+  fn unwrap_into(self) -> Self::Output {
+    self
+  }
+}
+
+impl<T: Debug + PartialEq + PartialEq<R>, R: Debug + PartialEq<T>> Unwrappable<T, R> for Option<T> {
+  type Output = T;
+  fn unwrap_into(self) -> Self::Output {
     self.unwrap() // Panics if None, which is suitable for a test failure
   }
 }
 
-impl<R, E: std::fmt::Debug> Unwrappable<R> for std::result::Result<R, E> {
-  fn unwrap_into(self) -> R {
+impl<T: Debug + PartialEq + PartialEq<R>, R: Debug + PartialEq<T>, E: std::fmt::Debug> Unwrappable<T, R>
+  for std::result::Result<T, E>
+{
+  type Output = T;
+  fn unwrap_into(self) -> Self::Output {
     self.unwrap() // Panics if Err, suitable for indicating a test failure
   }
 }
 
-impl<R, E: std::fmt::Debug> Unwrappable<R> for std::result::Result<Option<R>, E> {
-  fn unwrap_into(self) -> R {
+impl<T: Debug + PartialEq + PartialEq<R>, R: Debug + PartialEq<T>, E: std::fmt::Debug> Unwrappable<T, R>
+  for std::result::Result<Option<T>, E>
+{
+  type Output = T;
+  fn unwrap_into(self) -> Self::Output {
     self.unwrap().unwrap() // Double unwrap, panics on Err or None
   }
 }
 
-impl<R, E: std::fmt::Debug> Unwrappable<R> for Option<std::result::Result<R, E>> {
-  fn unwrap_into(self) -> R {
-    self.unwrap().unwrap() // Double unwrap, panics on None or Err
-  }
-}
-
-impl<R> Unwrappable<R> for R {
-  fn unwrap_into(self) -> R {
-    self
+impl<T: Debug + PartialEq + PartialEq<R>, R: Debug + PartialEq<T>, E: std::fmt::Debug> Unwrappable<T, R>
+  for Option<std::result::Result<T, E>>
+{
+  type Output = T;
+  fn unwrap_into(self) -> Self::Output {
+    self.unwrap().unwrap() // Double unwrap, panics on Err or None
   }
 }
 
@@ -97,9 +109,9 @@ impl<R> Unwrappable<R> for R {
 #[track_caller]
 pub fn equal<E, T, R>(a: E, b: R)
 where
-  E: Debug + Unwrappable<T>,
-  T: Debug + PartialEq<R>,
-  R: Debug + PartialEq<T>,
+  E: Debug + Unwrappable<T, R>,
+  E::Output: Debug + PartialEq<R>,
+  R: Debug + PartialEq + PartialEq<T>,
 {
   let c = a.unwrap_into();
   assert_eq!(c, b, "Expected {:?} to equal {:?}.", c, b);
@@ -125,11 +137,10 @@ where
 ///   not_equal(result.as_bytes(), b"bcd");
 /// }
 #[track_caller]
-pub fn not_equal<E, T, R>(a: E, b: R)
+pub fn not_equal<A, T, B>(a: A, b: B)
 where
-  E: Debug + Unwrappable<T>,
-  T: Debug + PartialEq<R>,
-  R: Debug + PartialEq<T>,
+  A: Debug + Unwrappable<T, B>,
+  B: Debug + PartialEq<A::Output>,
 {
   let c = a.unwrap_into();
   assert_ne!(c, b, "Expected {:?} to not equal {:?}.", c, b);
@@ -514,6 +525,15 @@ mod tests {
     equal("abc".to_string(), "abc");
     equal(5, 5);
     equal(&5, &5);
+    equal(b"abc".as_slice(), b"abc".to_vec());
+    equal(Option::Some(Result::Ok(b"abc".to_vec())), b"abc".to_vec());
+    equal(Option::Some(Result::Ok(b"abc".as_slice())), b"abc".to_vec());
+    equal(Result::Ok(Option::Some(b"abc".to_vec())), b"abc".to_vec());
+    equal(Result::Ok(Option::Some(b"abc".as_slice())), b"abc".to_vec());
+    equal(Result::Ok(b"abc".to_vec()), b"abc".to_vec());
+    equal(Result::Ok(b"abc".to_vec()), b"abc".as_slice());
+    equal(Option::Some(b"abc".to_vec()), b"abc".to_vec());
+    equal(Option::Some(b"abc".to_vec()), b"abc".as_slice());
     equal(Result::Ok(5), 5);
     equal(Option::Some(5), 5);
     equal(Result::Ok(Option::Some(5)), 5);
@@ -529,6 +549,14 @@ mod tests {
     not_equal("abc".to_string(), "def");
     not_equal(5, 4);
     not_equal(&5, &4);
+    not_equal(Option::Some(Result::Ok(b"abc".to_vec())), b"def".to_vec());
+    not_equal(Option::Some(Result::Ok(b"abc".as_slice())), b"def".to_vec());
+    not_equal(Result::Ok(Option::Some(b"abc".to_vec())), b"def".to_vec());
+    not_equal(Result::Ok(Option::Some(b"abc".as_slice())), b"def".to_vec());
+    not_equal(Result::Ok(b"abc".to_vec()), b"def".to_vec());
+    not_equal(Result::Ok(b"abc".to_vec()), b"def".as_slice());
+    not_equal(Option::Some(b"abc".to_vec()), b"def".to_vec());
+    not_equal(Option::Some(b"abc".to_vec()), b"def".as_slice());
     not_equal(Result::Ok(5), 4);
     not_equal(Option::Some(5), 4);
     not_equal(Result::Ok(Option::Some(5)), 4);

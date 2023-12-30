@@ -1,5 +1,9 @@
 # Common Testing Changelog
 
+## v1.1.1
+
+- Broaden accepted types for assert::equal and assert::not_equal (see unit tests for examples).
+
 ## v1.1.0
 
 - Assume destination type for assert:equal and assert:not_equal are the second parameter.

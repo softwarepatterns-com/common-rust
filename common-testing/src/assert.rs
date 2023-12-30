@@ -38,12 +38,6 @@ pub trait Unwrappable<R> {
   fn unwrap_into(self) -> R;
 }
 
-impl<R> Unwrappable<R> for R {
-  fn unwrap_into(self) -> R {
-    self
-  }
-}
-
 impl<R> Unwrappable<R> for Option<R> {
   fn unwrap_into(self) -> R {
     self.unwrap() // Panics if None, which is suitable for a test failure
@@ -65,6 +59,12 @@ impl<R, E: std::fmt::Debug> Unwrappable<R> for std::result::Result<Option<R>, E>
 impl<R, E: std::fmt::Debug> Unwrappable<R> for Option<std::result::Result<R, E>> {
   fn unwrap_into(self) -> R {
     self.unwrap().unwrap() // Double unwrap, panics on None or Err
+  }
+}
+
+impl<R> Unwrappable<R> for R {
+  fn unwrap_into(self) -> R {
+    self
   }
 }
 
@@ -95,10 +95,11 @@ impl<R, E: std::fmt::Debug> Unwrappable<R> for Option<std::result::Result<R, E>>
 /// }
 /// ```
 #[track_caller]
-pub fn equal<E, R>(a: E, b: R)
+pub fn equal<E, T, R>(a: E, b: R)
 where
-  E: Debug + Unwrappable<R>,
-  R: Debug + PartialEq,
+  E: Debug + Unwrappable<T>,
+  T: Debug + PartialEq<R>,
+  R: Debug + PartialEq<T>,
 {
   let c = a.unwrap_into();
   assert_eq!(c, b, "Expected {:?} to equal {:?}.", c, b);
@@ -124,10 +125,11 @@ where
 ///   not_equal(result.as_bytes(), b"bcd");
 /// }
 #[track_caller]
-pub fn not_equal<E, R>(a: E, b: R)
+pub fn not_equal<E, T, R>(a: E, b: R)
 where
-  E: Debug + Unwrappable<R>,
-  R: Debug + PartialEq,
+  E: Debug + Unwrappable<T>,
+  T: Debug + PartialEq<R>,
+  R: Debug + PartialEq<T>,
 {
   let c = a.unwrap_into();
   assert_ne!(c, b, "Expected {:?} to not equal {:?}.", c, b);
@@ -508,6 +510,8 @@ mod tests {
     let result = "abc";
     equal(result, "abc");
     equal(&result, &"abc");
+    pretty_assertions::assert_eq!("abc".to_string(), "abc");
+    equal("abc".to_string(), "abc");
     equal(5, 5);
     equal(&5, &5);
     equal(Result::Ok(5), 5);
@@ -521,6 +525,8 @@ mod tests {
     let result = "abc";
     not_equal(result, "def");
     not_equal(result.as_bytes(), b"bcd");
+    pretty_assertions::assert_ne!("abc".to_string(), "def");
+    not_equal("abc".to_string(), "def");
     not_equal(5, 4);
     not_equal(&5, &4);
     not_equal(Result::Ok(5), 4);

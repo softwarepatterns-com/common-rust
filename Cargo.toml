@@ -1,2 +1,3 @@
 [workspace]
-members = ["common-testing"]
+members = ["common-testing", "common-s3-headers"]
+resolver = "2"

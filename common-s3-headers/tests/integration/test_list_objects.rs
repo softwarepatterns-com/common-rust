@@ -1,5 +1,5 @@
 use crate::test_util::{assert, setup};
-use common_s3_headers::{self, S3Options};
+use common_s3_headers::{self, S3HeadersBuilder};
 use serde::Deserialize;
 use std::str::FromStr;
 use url::Url;
@@ -54,14 +54,13 @@ fn test_aws_structures() {
 fn test_list_objects() {
   let (access_key, secret_key, region) = setup::get_config_from_env("TEST_S3");
   let url = Url::from_str("https://jsonlog.s3.amazonaws.com/").unwrap();
-  let options = S3Options::new(&url)
+  let headers = S3HeadersBuilder::new(&url)
     .set_access_key(&access_key)
     .set_secret_key(&secret_key)
     .set_region(&region)
     .set_method("GET")
-    .set_service("s3");
-
-  let headers: Vec<(&str, String)> = common_s3_headers::get_headers(options);
+    .set_service("s3")
+    .build();
 
   let (status_code, response_headers, body) = assert::request_get(url, headers);
 
@@ -79,14 +78,13 @@ fn test_list_objects() {
 fn test_list_objects_v2() {
   let (access_key, secret_key, region) = setup::get_config_from_env("TEST_S3");
   let url = Url::from_str("https://jsonlog.s3.amazonaws.com/?list_type=2").unwrap();
-  let options = S3Options::new(&url)
+  let headers = S3HeadersBuilder::new(&url)
     .set_access_key(&access_key)
     .set_secret_key(&secret_key)
     .set_region(&region)
     .set_method("GET")
-    .set_service("s3");
-
-  let headers: Vec<(&str, String)> = common_s3_headers::get_headers(options);
+    .set_service("s3")
+    .build();
 
   let (status_code, response_headers, body) = assert::request_get(url, headers);
 

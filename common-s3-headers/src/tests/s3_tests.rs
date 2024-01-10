@@ -1,7 +1,6 @@
 use crate::{
   aws_math::get_sha256,
-  s3,
-  s3_options::{S3DateTime, S3Options},
+  s3::{self, S3DateTime, S3HeadersBuilder},
 };
 use common_testing::assert;
 use std::str::FromStr;
@@ -10,7 +9,7 @@ use url::Url;
 #[test]
 fn test_get_object() {
   let url = Url::from_str("https://jsonlog.s3.amazonaws.com/test.json").unwrap();
-  let options = S3Options::new(&url)
+  let options = S3HeadersBuilder::new(&url)
     .set_access_key("some_access_key")
     .set_secret_key("some_secret_key")
     .set_region("some_place")
@@ -36,7 +35,7 @@ fn test_put_object() {
   let headers = &[("x-amz-storage-class", "REDUCED_REDUNDANCY".to_owned())];
   let content = b"".as_slice();
   let sha = get_sha256(content);
-  let options = S3Options::new(&url)
+  let options = S3HeadersBuilder::new(&url)
     .set_access_key("some_access_key")
     .set_secret_key("some_secret_key")
     .set_region("some_place")

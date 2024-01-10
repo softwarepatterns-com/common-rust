@@ -2,11 +2,12 @@
 //!
 //! Any creation of strings goes here.
 //!
-use crate::get_sha256;
 use percent_encoding::{percent_decode_str, utf8_percent_encode, AsciiSet, CONTROLS};
 use std::ops::Add;
 use time::{macros::format_description, OffsetDateTime};
 use url::Url;
+
+use crate::aws_math::get_sha256;
 
 const SHORT_DATE: &[time::format_description::FormatItem<'static>] = format_description!("[year][month][day]");
 

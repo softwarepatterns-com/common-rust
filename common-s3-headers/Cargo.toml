@@ -1,10 +1,12 @@
 [package]
 name = "common-s3-headers"
-authors = ["Dane Stuckel <dane.stuckel@gmail.com>"]
+authors = ["Dane Stuckel <dane@softwarepatterns.com>"]
+description = "Only the headers necessary for communicating with S3-like services. It's all you need."
 version = "0.0.1"
 edition = "2021"
 readme = "README.md"
-
+repository = "https://github.com/softwarepatterns-com/common-rust/tree/main/common-s3-headers"
+license = "Apache-2.0"
 include = ["/src"]
 
 [lib]

@@ -1,0 +1,16 @@
+[package]
+name = "common-event-bus"
+authors = ["Dane Stuckel <dane@softwarepatterns.com>"]
+description = "Common testing shortcuts and utilities reused across projects."
+version = "0.0.1"
+edition = "2021"
+readme = "README.md"
+repository = "https://github.com/softwarepatterns-com/common-rust/tree/main/common-event-bus"
+license = "Apache-2.0"
+include = ["/src"]
+
+[dependencies]
+
+[dev-dependencies]
+common-testing = "1.1.1"
+futures = "0.3.28"

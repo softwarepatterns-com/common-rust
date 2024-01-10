@@ -1,0 +1,29 @@
+[package]
+name = "common-s3-headers"
+authors = ["Dane Stuckel <dane.stuckel@gmail.com>"]
+version = "0.0.1"
+edition = "2021"
+readme = "README.md"
+
+include = ["/src"]
+
+[lib]
+bench = false
+
+[dependencies]
+hmac = "0.12.1"
+percent-encoding = "2.3.0"
+sha2 = "0.10.8"
+time = { version = "0.3.23", features = ["formatting", "macros"] }
+url = "2.4.0"
+hex = "0.4.3"
+hex-literal = "0.4.1"
+
+
+[dev-dependencies]
+common-testing = "1.1.1"
+dotenvy = "0.15.7"
+quick-xml = "0.30.0"
+reqwest = { version = "0.11.18", features = ["blocking"] }
+serde = { version = "1.0.195", features = ["alloc", "derive"] }
+serde-xml-rs = "0.6.0"

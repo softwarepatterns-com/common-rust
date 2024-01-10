@@ -69,7 +69,7 @@ fn test_put_object_full() {
 
   // Use Reqwest
   let response = reqwest::blocking::Client::new()
-    .get(url)
+    .put(url)
     .headers(reqwest::header::HeaderMap::from_iter(headers.into_iter().map(
       |(k, v)| {
         (

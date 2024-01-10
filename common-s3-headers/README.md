@@ -51,7 +51,7 @@ let headers = S3HeadersBuilder::new(&url)
 
 // Use Reqwest or any other library!
 let response = reqwest::blocking::Client::new()
-  .get(url)
+  .put(url)
   .headers(reqwest::header::HeaderMap::from_iter(headers.into_iter().map(
     |(k, v)| {
       (

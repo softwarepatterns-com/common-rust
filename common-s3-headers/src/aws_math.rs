@@ -70,10 +70,10 @@ fn fold_hmacs(items: &[&[u8]]) -> Vec<u8> {
 /// use common_s3_headers::aws_math::get_signature_key;
 /// use time::OffsetDateTime;
 ///
-/// let datetime = OffsetDateTime::now_utc();
+/// let datetime = OffsetDateTime::from_unix_timestamp(0).unwrap();
 /// let result = get_signature_key(&datetime, "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY", "us-east-1", "iam");
 /// assert_eq!(result, vec![
-///  74, 3, 90, 110, 208, 212, 221, 157, 23, 92, 98, 135, 89, 69, 167, 237, 78, 139, 55, 231, 149, 132, 41, 187, 21, 242, 192, 178, 126, 53, 92, 48
+///  66, 8, 135, 252, 134, 148, 53, 127, 234, 31, 244, 66, 17, 242, 120, 186, 172, 171, 173, 40, 246, 5, 142, 3, 34, 117, 41, 147, 34, 13, 122, 223
 /// ]);
 /// ```
 ///

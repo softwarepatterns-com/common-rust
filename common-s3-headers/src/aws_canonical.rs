@@ -1,8 +1,9 @@
-/// Given a list of headers, returns headers that match the AWS spec. This includes:
+/// Given a list of headers, returns headers that match the AWS spec.
+///
+/// This includes:
 /// - Lowercasing all keys.
 /// - Removing all headers that don't start with "x-amz-" or are "host", "content-type", or "range".
 /// - Sorting the headers by key.
-/// - Trimming whitespace from values.
 ///
 /// # Examples
 ///
@@ -27,7 +28,7 @@
 /// );
 /// ```
 ///
-pub fn to_canonical_headers<K: AsRef<str>, V: AsRef<str>>(headers: &[(K, V)]) -> Vec<(std::string::String, &str)> {
+pub fn to_canonical_headers<K: AsRef<str>, V: AsRef<str>>(headers: &[(K, V)]) -> Vec<(String, &str)> {
   let mut canonical_headers = headers
     .iter()
     .filter_map(|(k, v)| {
@@ -41,6 +42,30 @@ pub fn to_canonical_headers<K: AsRef<str>, V: AsRef<str>>(headers: &[(K, V)]) ->
     .collect::<Vec<(String, &str)>>();
   canonical_headers.sort();
   canonical_headers
+}
+
+/// Gets the headers necessary to ask for a byte range. Allocates.
+/// # Examples
+///
+/// ```
+/// use common_s3_headers::aws_canonical::get_range_headers;
+///
+/// let headers = get_range_headers(1, None);
+/// assert_eq!(headers, vec![("Accept", "application/octet-stream".to_string()), ("Range", "bytes=1-".to_string())]);
+///
+/// let headers = get_range_headers(1, Some(2));
+/// assert_eq!(headers, vec![("Accept", "application/octet-stream".to_string()), ("Range", "bytes=1-2".to_string())]);
+/// ```
+///
+pub fn get_range_headers(start: u64, end: Option<u64>) -> Vec<(&'static str, String)> {
+  let mut range = format!("bytes={}-", start);
+
+  if let Some(end) = end {
+    range.push_str(&end.to_string());
+  }
+
+  // If range, then the content type must be application/octet-stream.
+  vec![("Accept", "application/octet-stream".to_string()), ("Range", range)]
 }
 
 #[cfg(test)]
@@ -156,5 +181,26 @@ mod tests {
         ("x-amz-storage-class".to_owned(), "REDUCED_REDUNDANCY"),
       ],
     )
+  }
+
+  #[test]
+  fn test_get_range_headers() {
+    let headers = get_range_headers(1, None);
+    assert::equal(
+      headers,
+      vec![
+        ("Accept", "application/octet-stream".to_owned()),
+        ("Range", "bytes=1-".to_owned()),
+      ],
+    );
+
+    let headers = get_range_headers(1, Some(2));
+    assert::equal(
+      headers,
+      vec![
+        ("Accept", "application/octet-stream".to_owned()),
+        ("Range", "bytes=1-2".to_owned()),
+      ],
+    );
   }
 }

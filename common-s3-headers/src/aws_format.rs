@@ -64,7 +64,7 @@ pub fn to_long_datetime(datetime: &OffsetDateTime) -> String {
     .expect("All dates can be represented as long.")
 }
 
-///
+/// The set of characters that are allowed in an AWS fragment.
 ///
 /// See https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html
 /// See https://perishablepress.com/stop-using-unsafe-characters-in-urls/
@@ -130,6 +130,21 @@ pub fn credential_scope_string(datetime: &OffsetDateTime, region: &str, service:
 }
 
 /// Generate the AWS authorization header.
+///
+/// # Examples
+///
+/// ```
+/// use time::OffsetDateTime;
+/// use common_s3_headers::aws_format::authorization_header_string;
+///
+/// let datetime = OffsetDateTime::from_unix_timestamp(0).unwrap();
+/// let result = authorization_header_string("access_key", &datetime, "us-east-1", "s3", "signed_headers", "signature");
+/// assert_eq!(
+///  result,
+///  "AWS4-HMAC-SHA256 Credential=access_key/19700101/us-east-1/s3/aws4_request,SignedHeaders=signed_headers,Signature=signature"
+/// );
+/// ```
+///
 pub fn authorization_header_string(
   access_key: &str,
   datetime: &OffsetDateTime,
@@ -234,6 +249,20 @@ fn to_key_value_strings<S: AsRef<str>, T: AsRef<str>>(headers: &[(S, T)], sep: &
 }
 
 /// Get the keys from a list of key-value pairs. Allocates.
+///
+/// # Examples
+///
+/// ```
+/// use common_s3_headers::aws_format::get_keys;
+///
+/// let headers = vec![
+///  ("x-amz-date", "20130524T000000Z"),
+///  ("Range", "bytes=0-9"),
+///  ("Host", "examplebucket.s3.amazonaws.com"),
+/// ];
+/// let result = get_keys(&headers);
+/// assert_eq!(result, vec!["x-amz-date", "Range", "Host"]);
+/// ```
 pub fn get_keys<S: AsRef<str>, T>(headers: &[(S, T)]) -> Vec<&str> {
   headers.iter().map(|(key, _)| key.as_ref()).collect::<Vec<&str>>()
 }

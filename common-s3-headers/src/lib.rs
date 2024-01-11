@@ -4,6 +4,3 @@ pub mod aws_math;
 mod s3;
 
 pub use s3::*;
-
-#[cfg(test)]
-mod tests;

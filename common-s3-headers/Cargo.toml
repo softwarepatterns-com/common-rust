@@ -2,7 +2,7 @@
 name = "common-s3-headers"
 authors = ["Dane Stuckel <dane@softwarepatterns.com>"]
 description = "Only the headers necessary for communicating with S3-like services. It's all you need."
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 readme = "README.md"
 repository = "https://github.com/softwarepatterns-com/common-rust/tree/main/common-s3-headers"
